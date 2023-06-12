@@ -21,7 +21,7 @@ using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_o
 int main() {
     fastio;
 
-    map<char, int> points= {{'A',0}, {'B',3}, {'C',4}, {'D',8}, {'E',9}, {'F',14}, {'G',23}};
+    map<char, int> points = {{'A',0}, {'B',3}, {'C',4}, {'D',8}, {'E',9}, {'F',14}, {'G',23}};
     
     char p, q;
     cin >> p >> q;
