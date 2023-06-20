@@ -13,7 +13,7 @@ Solutions to several contests problems from competitive programming websites, su
 
 ## Library
 
-A library containing algorithms and data structures useful in contests. It's purpose, besides increasing my efficiency in online contests, is to make me practice their ideas and implementations.
+A library containing algorithms and data structures useful in contests. It's purpose, besides increasing my performance in online contests, is helping me practice their ideas and implementations.
 
 ## Template
 
