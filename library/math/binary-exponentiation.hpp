@@ -1,10 +1,10 @@
 #pragma once
 
-using ll = long long;
+using ull = unsigned long long;
 
-ll binary_exponentiation(ll a, ll b, ll m) {
+ull binary_exponentiation(ull a, ull b, const ull m) {
     a %= m;
-    ll ans = 1;
+    ull ans = 1;
     while(b > 0) {
         if(b&1) {
             ans = (ans * a) % m;
