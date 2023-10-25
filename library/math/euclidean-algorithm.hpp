@@ -6,7 +6,9 @@ using namespace std;
 using ll = long long;
 
 ll gcd(ll a, ll b) {
-    while(b != 0) {
+    a = abs(a);
+    b = abs(b);
+    while(b > 0) {
         tie(a,b) = make_tuple(b, a % b);
     }
     return a;
