@@ -1,5 +1,7 @@
 #pragma once
 
+namespace cp {
+
 using ull = unsigned long long;
 
 ull binary_exponentiation(ull a, ull b, const ull m) {
@@ -13,4 +15,6 @@ ull binary_exponentiation(ull a, ull b, const ull m) {
         a = (a*a) % m;
     }
     return ans;
+}
+
 }

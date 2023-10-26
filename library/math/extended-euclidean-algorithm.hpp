@@ -1,6 +1,8 @@
 #pragma once
 #include <algorithm>
 
+namespace cp {
+
 using namespace std;
 
 using ll = long long;
@@ -20,4 +22,6 @@ tlll egcd(ll a, ll b) {
     x = (a >= 0) ? x : -x;
     y = (b >= 0) ? y : -y;
     return {gcd, x, y};
+}
+
 }

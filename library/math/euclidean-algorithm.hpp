@@ -1,6 +1,8 @@
 #pragma once
 #include <algorithm>
 
+namespace cp {
+
 using namespace std;
 
 using ll = long long;
@@ -12,4 +14,6 @@ ll gcd(ll a, ll b) {
         tie(a,b) = make_tuple(b, a % b);
     }
     return a;
+}
+
 }
