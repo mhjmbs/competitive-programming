@@ -31,11 +31,9 @@ int main() {
         adjacencies[p].push_back(i);
     }
 
-    dfs(1, 1);
+    dfs(1, -1);
 
     for(int i = 1; i <= n; i++) {
-        cout << subordinates[i];
-        if(i != n) cout << ' ';
-        else cout << '\n';
+        cout << subordinates[i] << (i != n ? ' ' : '\n');
     }
 }
