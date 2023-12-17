@@ -17,4 +17,4 @@ A library containing algorithms and data structures useful in contests. It's pur
 
 ## Template
 
-A code snippet to be used as a starting point for every problem in a contest, containing frequently used code such as aliases and definitions, in order to avoid rewriting them from scratch everytime.
+A code snippet to be used as a starting point for every problem in a contest, containing frequently used code such as aliases and definitions in order to avoid rewriting them from scratch everytime.
