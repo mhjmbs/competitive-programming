@@ -1,65 +1,84 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
 
 using namespace std;
+using namespace __gnu_pbds;
+
+#define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
+
+using ll = long long;
+using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+
+int n, m;
+vector<vector<int>> adjacencies;
+
+queue<pii> q;
+vector<bool> enqueued;
+vector<int> last;
+
+void printPath() {
+    vector<int> path;
+
+    int node = n;
+    while(node != 1) {
+        path.push_back(node);
+        node = last[node];
+    }
+    path.push_back(1);
+
+    reverse(path.begin(), path.end());
+
+    for(int i = 0; i < path.size(); i++) {
+        cout << path[i] << (i != path.size()-1 ? ' ' : '\n');
+    }
+}
 
 int main() {
-    ios::sync_with_stdio(0);
+    fastio;
 
-    int n, m;
     cin >> n >> m;
-    
-    vector<vector<int>> adjacencies(n+1);
 
-    for(int i = 0, a, b; i < m; i++) {
-        cin >> a >> b;
-        adjacencies[a].push_back(b);
-        adjacencies[b].push_back(a);
+    adjacencies.resize(n+1);
+
+    for(int i = 0; i < m; i++) {
+        int u, v;
+        cin >> u >> v;
+        adjacencies[u].push_back(v);
+        adjacencies[v].push_back(u);
     }
-    
-    vector<int> p(n+1, -1);
-    vector<bool> vis(n+1, false);
-    queue<int> q;
 
-    q.push(1);
-    vis[1] = true;
-    
+    queue<pii> q;
+    enqueued.resize(n+1, false);
+    last.resize(n+1, -1);
+
+    q.emplace(1, 0);
+    enqueued[1] = true;
+
     while(!q.empty()) {
-        int c = q.front();
+        auto [node, dist] = q.front();
         q.pop();
 
-        if(c == n) {
-            break;
+        if(node == n) {
+            cout << dist+1 << '\n';
+            printPath();
+            exit(0);
         }
 
-        for(int adj : adjacencies[c]) {
-            if(!vis[adj]) {
-                q.push(adj);
-                p[adj] = c;
-                vis[adj] = true;
+        for(int adj : adjacencies[node]) {
+            if(!enqueued[adj]) {
+                last[adj] = node;
+                q.emplace(adj, dist+1);
+                enqueued[adj] = true;
             }
         }
     }
 
-    stack<int> path;
-
-    int curr = n;
-
-    while(curr != -1) {
-        path.push(curr);
-        curr = p[curr];
-    }
-
-    if(path.size() == 1) {
-        cout << "IMPOSSIBLE\n";
-        return 0;
-    }
-
-    cout << path.size() << '\n';
-
-    while(!path.empty()) {
-        cout << path.top();
-        path.pop();
-        if(path.size() > 0) cout << ' ';
-        else cout << '\n';
-    }
+    cout << "IMPOSSIBLE\n";
 }
