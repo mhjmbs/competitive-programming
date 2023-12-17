@@ -5,22 +5,18 @@
 using namespace std;
 
 class Dsu {
-    vector<int> root;
-    vector<int> max_depth;
+    vector<int> parent;
+    vector<int> height;
 
     public:
 
-    Dsu(int node_count) {
-        max_depth.resize(node_count, 0);
-        root.resize(node_count);
-
-        for(int u = 0; u < root.size(); u++) {
-            root[u] = u;
-        }
+    Dsu(int n) {
+        height.resize(n, 0);
+        parent.resize(n, -1);
     }
 
     int find(int u) {
-        return root[u] == u ? u : root[u] = find(root[u]);
+        return parent[u] == -1 ? u : parent[u] = find(parent[u]);
     }
 
     void merge(int u, int v) {
@@ -28,12 +24,10 @@ class Dsu {
         v = find(v);
 
         if(u != v) {
-            if(max_depth[u] < max_depth[v]) {
-                swap(u, v);
-            }
+            if(height[u] < height[v]) swap(u, v);
 
-            root[v] = u;
-            max_depth[u] = max(max_depth[u], max_depth[v]+1);
+            parent[v] = u;
+            height[u] = max(height[u], height[v]+1);
         }
     }
 };
