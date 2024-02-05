@@ -1,16 +1,18 @@
 #pragma once
 
+#include <bits/stdc++.h>
+
+using namespace std;
+
+using ll = long long;
+
 namespace cp {
 
-using ull = unsigned long long;
-
-ull binary_exponentiation(ull a, ull b, const ull m) {
+ll binExp(ll a, ll b, ll m = LONG_LONG_MAX) {
     a %= m;
-    ull ans = 1;
+    ll ans = 1;
     while(b > 0) {
-        if(b&1) {
-            ans = (ans * a) % m;
-        }
+        if(b&1) ans = (ans * a) % m;
         b >>= 1;
         a = (a*a) % m;
     }
