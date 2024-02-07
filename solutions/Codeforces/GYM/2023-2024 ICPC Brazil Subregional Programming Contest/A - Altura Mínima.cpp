@@ -24,12 +24,8 @@ int main() {
     int n, h;
     cin >> n >> h;
 
-    int ans = 0;
+    vector<int> a(n);
+    for(int& ai : a) cin >> ai;
 
-    for(int i = 0, curr; i < n; i++) {
-        cin >> curr;
-        ans += h >= curr ? 1 : 0;
-    }
-
-    cout << ans << '\n';
+    cout << count_if(a.begin(), a.end(), [h](int ai) {return ai <= h;}) << '\n';
 }
