@@ -24,24 +24,20 @@ int main() {
     int d, c, r;
     cin >> d >> c >> r;
 
-    queue<int> q;
+    vector<int> C(c), R(r);
+    for(int&ci : C) cin >> ci;
+    for(int&ri : R) cin >> ri;
 
-    for(int i = 0, ci; i < c; i++) {
-        cin >> ci;
-        q.push(ci);
-    }
-
-    for(int i = 0, ri; i < r; i++) {
-        cin >> ri;
-        d += ri;
-    }
-
-    int ans = r;
-
-    while(!q.empty() && q.front() <= d) {
-        d -= q.front();
-        q.pop();
-        ans++;
+    ll ans = r;
+    d += accumulate(R.begin(), R.end(), 0);
+    
+    for(int ci : C) {
+        if(ci <= d) {
+            d -= ci;
+            ans++;
+        }else {
+            break;
+        }
     }
 
     cout << ans << '\n';
