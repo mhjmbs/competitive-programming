@@ -27,17 +27,16 @@ int main() {
     int k;
     cin >> k;
 
-    vector<priority_queue<char, vector<char>, greater<char>>> v(k);
+    vector<priority_queue<char, vector<char>, greater<char>>> groups(k);
 
     for(int i = 0; i < s.size(); i++) {
-        v[i%k].push(s[i]);
+        groups[i%k].push(s[i]);
     }
 
-    int i = 0;
-    while(!v[i%k].empty()) {
-        cout << v[i%k].top();
-        v[i%k].pop();
-        i++;
+    for(int i = 0; i < s.size(); i++) {
+        s[i] = groups[i%k].top();
+        groups[i%k].pop();
     }
-    cout << '\n';
+
+    cout << s << '\n';
 }
