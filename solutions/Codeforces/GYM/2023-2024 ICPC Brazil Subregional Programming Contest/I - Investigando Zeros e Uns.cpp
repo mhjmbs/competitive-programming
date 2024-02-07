@@ -25,27 +25,26 @@ int main() {
     cin >> n;
 
     vector<int> b(n);
-    for(int &bi : b) cin >> bi;
+    for(int& bi : b) cin >> bi;
 
-    vector<vector<int>> dp(n, vector<int>(2));
+    vector<vector<ll>> dp(n, vector<ll>(2, 0));
 
-    dp[0][0] = b[0] == 0;
-    dp[0][1] = b[0] == 1;
+    dp[0][1] = b[0] == 1 ? 1 : 0;
+    dp[0][0] = b[0] == 0 ? 1 : 0;
 
     for(int i = 1; i < n; i++) {
         if(b[i] == 1) {
-            dp[i][0] = dp[i-1][1];
             dp[i][1] = dp[i-1][0] + 1;
+            dp[i][0] = dp[i-1][1];
         }else {
-            dp[i][0] = dp[i-1][0] + 1;
             dp[i][1] = dp[i-1][1];
+            dp[i][0] = dp[i-1][0] + 1;
         }
     }
 
     ll ans = 0;
-    for(int i = 0; i < n; i++) {
-        ans += dp[i][1];
-    }
 
+    for(int i = 0; i < n; i++) ans += dp[i][1];
+    
     cout << ans << '\n';
 }
