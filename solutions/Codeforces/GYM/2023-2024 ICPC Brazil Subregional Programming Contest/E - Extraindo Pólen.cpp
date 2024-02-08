@@ -16,11 +16,11 @@ using tlll = tuple<ll,ll,ll>;
 using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
 using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
 
-int digit_sum(int x) {
+int digitSum(int x) {
     int ans = 0;
-    while(x > 0) {
+    while(x != 0) {
         ans += x%10;
-        x /= 10;
+        x/=10;
     }
     return ans;
 }
@@ -31,24 +31,28 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    vector<int> occur(1e6+1, 0);
-
-    for(int i = 0, curr; i < n; i++) {
-        cin >> curr;
-        occur[curr]++;
+    vector<int> freq(1e6+1, 0);
+    for(int i = 0; i < n; i++) {
+        int fi;
+        cin >> fi;
+        freq[fi]++;
     }
 
-    int removed = 0;
-    int curr = 1e6;
+    int curr = 0;
+    int ans = 0;
 
-    while(removed < k && curr >= 0) {
+    for(int i = 1e6; i > 0; i--) {
+        if(freq[i] == 0) continue;
 
-        removed += occur[curr];
-        occur[curr - digit_sum(curr)] += occur[curr];
-        occur[curr] = 0;
+        curr += freq[i];
+        freq[i - digitSum(i)] += freq[i];
+        freq[i] = 0;
+    
+        if(curr >= k) {
+            ans = digitSum(i);
+            break;
+        }
+    }
 
-        curr--;
-   }
-
-   cout << digit_sum(curr+1) << '\n';
+    cout << ans << '\n';
 }
