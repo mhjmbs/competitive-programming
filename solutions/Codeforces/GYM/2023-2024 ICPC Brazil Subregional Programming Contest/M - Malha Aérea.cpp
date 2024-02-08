@@ -24,36 +24,33 @@ int main() {
     int n;
     cin >> n;
 
-    vector<vector<int>> m(n, vector<int>(n));
+    vector<vector<int>> c(n, vector<int>(n));
+
     for(int i = 0; i < n; i++) {
         for(int j = 0; j < n; j++) {
-            cin >> m[i][j];
+            cin >> c[i][j];
         }
     }
 
-    bool yes = true;
+    bool coherent = true;
 
-    set<pii> eliminated;
+    int ans = 0;
+
+    set<pii> cuts;
 
     for(int k = 0; k < n; k++) {
-        for(int u = 0; u < n; u++) {
-            for(int v = 0; v < n; v++) {
-                if(u == v || u == k || k == v) {
-                    continue;
-                }
-
-                if(m[u][v] == m[u][k] + m[k][v] && eliminated.count({u,v}) == 0 && eliminated.count({v,u}) == 0) {
-                    eliminated.emplace(u,v);
-                }else if(m[u][v] > m[u][k] + m[k][v]){
-                    yes = false;
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                if(i == j || i == k || j == k) continue;
+                if(c[i][j] > c[i][k] + c[k][j]) coherent = false;
+                else if(c[i][j] == c[i][k] + c[k][j] && cuts.count({i,j}) == 0) {
+                    ans++;
+                    cuts.emplace(i,j);
+                    cuts.emplace(j,i);
                 }
             }
         }
     }
 
-    if(yes) {
-        cout << eliminated.size() << '\n';
-    }else {
-        cout << -1 << '\n';
-    }
+    cout << (coherent ? ans : -1) << '\n';
 }
