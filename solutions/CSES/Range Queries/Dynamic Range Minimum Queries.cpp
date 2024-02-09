@@ -1,54 +1,66 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
 
 #define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
 
-using namespace std;
 using ll = long long;
 using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
 
-struct SegTree {
-    vector<int> seg;
-    int lr_start;
-    int lr_size = 1;
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
 
-    SegTree(vector<int> &x) {
-        setSize(x.size());
+template <typename T>
+struct SegmentTree {
+    inline static const T neutral = numeric_limits<T>::max();
+    vector<T> seg;
+    int leafsBegin;
+    int leafsCount;
 
-        lr_start = seg.size() - lr_size;
+    SegmentTree(const vector<T>& v) {
+        leafsCount = 1;
+        while(leafsCount < v.size()) leafsCount *= 2;
+        seg.resize(2*leafsCount-1, neutral);
+        
+        leafsBegin = seg.size() - leafsCount;
 
-        for(int i = 0; i < x.size(); i++) {
-            seg[lr_start + i] = x[i];
+        for(int i = 0; i < v.size(); i++) {
+            seg[leafsBegin+i] = v[i];
         }
 
-        for(int i = lr_start-1; 0 <= i; i--) {
-            seg[i] = min(seg[2*i+1],seg[2*i+2]);
+        for(int i = leafsBegin-1; i >= 0; i--) {
+            seg[i] = op(seg[2*i+1], seg[2*i+2]);
         }
     }
 
-    void setSize(int array_size) {
-        while(lr_size < array_size) lr_size *= 2;
-        seg.resize(2*lr_size-1, INT_MAX);
-    }
-
-    void set(int k, int u) {
-        int i = lr_start + k;
-        seg[i] = u;
-
+    void upd(int i, T val) {
+        i = leafsBegin + i;
+        seg[i] = val;
         while(i > 0) {
-            if(i % 2 == 0) i = (i-2)/2;
-            else i = (i-1)/2;
-            seg[i] = min(seg[2*i+1], seg[2*i+2]);
+            i = (i-1)/2;
+            seg[i] = op(seg[2*i+1], seg[2*i+2]);
         }
     }
 
-    int query(int l, int r, int lx = 0, int rx = -1, int i = 0) {
-        if(rx == -1) rx = lr_size-1;
+    T query(int l, int r) {
+        return query(l, r, 0, leafsCount-1, 0);
+    }
 
-        int m = (lx + rx)/2;
-
-        if(r < lx || rx < l) return INT_MAX;
+    T query(int l, int r, int lx, int rx, int i) {
+        if(rx < l || r < lx) return neutral;
         if(l <= lx && rx <= r) return seg[i];
-        return min(query(l, r, lx, m, 2*i+1), query(l, r, m+1, rx, 2*i+2));
+        int mid = (lx+rx)/2;
+        return op( query(l, r, lx, mid, 2*i+1), query(l, r, mid+1, rx, 2*i+2) );
+    }
+
+    T op(T a, T b) {
+        return min(a,b);
     }
 };
 
@@ -59,22 +71,24 @@ int main() {
     cin >> n >> q;
 
     vector<int> x(n);
-    for(int &num : x) cin >> num;
+    for(int& xi : x) cin >> xi;
 
-    SegTree seg(x);
+    SegmentTree seg(x);
 
-    for(int i = 0, tq; i < q; i++) {
-        cin >> tq;
-        if(tq == 1) {
+    while(q--) {
+        int t;
+        cin >> t;
+
+        if(t == 1) {
             int k, u;
             cin >> k >> u;
             k--;
-            seg.set(k,u);
+            seg.upd(k,u);
         }else {
-            int l, r;
-            cin >> l >> r;
-            l--;r--;
-            cout << seg.query(l, r) << '\n';
+            int a, b;
+            cin >> a >> b;
+            a--,b--;
+            cout << seg.query(a,b) << '\n';
         }
     }
 }
