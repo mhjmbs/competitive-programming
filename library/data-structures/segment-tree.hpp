@@ -23,7 +23,7 @@ struct SegmentTree {
         }
 
         for(int i = leafsBegin-1; i >= 0; i--) {
-            seg[i] = op(seg[2*i+1], seg[2*i+2]);
+            seg[i] = merge(seg[2*i+1], seg[2*i+2]);
         }
     }
 
@@ -32,7 +32,7 @@ struct SegmentTree {
         seg[i] = val;
         while(i > 0) {
             i = (i-1)/2;
-            seg[i] = op(seg[2*i+1], seg[2*i+2]);
+            seg[i] = merge(seg[2*i+1], seg[2*i+2]);
         }
     }
 
@@ -44,10 +44,10 @@ struct SegmentTree {
         if(rx < l || r < lx) return neutral;
         if(l <= lx && rx <= r) return seg[i];
         int mid = (lx+rx)/2;
-        return op( query(l, r, lx, mid, 2*i+1), query(l, r, mid+1, rx, 2*i+2) );
+        return merge( query(l, r, lx, mid, 2*i+1), query(l, r, mid+1, rx, 2*i+2) );
     }
 
-    T op(T a, T b) {
+    T merge(T a, T b) {
         return min(a,b);
     }
 };

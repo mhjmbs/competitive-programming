@@ -1,104 +1,93 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
 
 using namespace std;
+using namespace __gnu_pbds;
+
+#define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
+
+using ll = long long;
 using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
 
-struct segtree {
-    int lrStart;
-    int lrSize = 1;
-    vector<pii> st;
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
 
-    segtree(vector<int>& a) {
-        setSize(a.size());
-        lrStart = st.size() - lrSize;
+template <typename T>
+struct SegmentTree {
+    inline static const T neutral = {numeric_limits<int>::max(), 0};
+    vector<T> seg;
+    int leafsBegin;
+    int leafsCount;
 
-        for(int i = lrStart; i - lrStart < a.size(); i++) {
-            st[i] = {a[i - lrStart], 1};
-        }
+    SegmentTree(const vector<int>& v) {
+        leafsCount = 1;
+        while(leafsCount < v.size()) leafsCount *= 2;
+        seg.resize(2*leafsCount-1, neutral);
         
-        for(int i = lrStart-1; i >= 0; i--) {
-            pii lc = st[2*i+1], rc = st[2*i+2];
-            if(lc.first == rc.first) {
-                st[i] = {lc.first, lc.second + rc.second};
-            }else {
-                st[i] = min(lc, rc);
-            }
+        leafsBegin = seg.size() - leafsCount;
+
+        for(int i = 0; i < v.size(); i++) {
+            seg[leafsBegin+i] = {v[i],1};
+        }
+
+        for(int i = leafsBegin-1; i >= 0; i--) {
+            seg[i] = merge(seg[2*i+1], seg[2*i+2]);
         }
     }
 
-    void setSize(int initSize) {
-        while(lrSize < initSize) {
-            lrSize *= 2;
-        }
-
-        st.resize(2*lrSize - 1, {INT_MAX, 1});
-    }
-
-    void set(int i, int v) {
-        i = lrStart + i;
-        st[i] = {v, 1};
-
+    void upd(int i, int val) {
+        i = leafsBegin + i;
+        seg[i] = {val,1};
         while(i > 0) {
-            if(i % 2 == 0) {
-                if(st[i].first == st[i-1].first) {
-                    st[(i-2)/2] = {st[i].first, st[i].second + st[i-1].second};
-                }else {
-                    st[(i-2)/2] = min(st[i], st[i-1]);
-                }
-                i = (i-2)/2;
-            }else {
-                if(st[i].first == st[i+1].first) {
-                    st[(i-1)/2] = {st[i].first, st[i].second + st[i+1].second};
-                }else {
-                    st[(i-1)/2] = min(st[i], st[i+1]);
-                }
-                i = (i-1)/2;
-            }
+            i = (i-1)/2;
+            seg[i] = merge(seg[2*i+1], seg[2*i+2]);
         }
     }
 
-    pii query(int l, int r, int lx = 0, int rx = -1, int i = 0) {
-        if(rx == -1) {
-            rx = lrSize-1;
-        }
+    T query(int l, int r) {
+        return query(l, r, 0, leafsCount-1, 0);
+    }
 
-        if(l <= lx && rx <= r) {
-            return st[i];
-        }else if(rx < l || r < lx) {
-            return {INT_MAX,1};
-        }else {
-            int m = lx + (rx-lx)/2;
-            pii lc = query(l, r, lx, m, 2*i+1), rc = query(l, r, m+1, rx, 2*i+2);
-            if(lc.first == rc.first) {
-                return {lc.first, lc.second + rc.second};
-            }else {
-                return min(lc, rc);
-            }
-        }
+    T query(int l, int r, int lx, int rx, int i) {
+        if(rx < l || r < lx) return neutral;
+        if(l <= lx && rx <= r) return seg[i];
+        int mid = (lx+rx)/2;
+        return merge( query(l, r, lx, mid, 2*i+1), query(l, r, mid+1, rx, 2*i+2) );
+    }
+
+    T merge(T a, T b) {
+        if(a.first == b.first) return {a.first, a.second+b.second};
+        return min(a,b);
     }
 };
 
 int main() {
-    ios::sync_with_stdio(0);
+    fastio;
 
     int n, m;
     cin >> n >> m;
 
     vector<int> a(n);
     for(int& ai : a) cin >> ai;
-    
-    segtree st(a);
 
-    for(int k = 0, q; k < m; k++) {
-        cin >> q;
-        if(q == 1) {
+    SegmentTree<pii> seg(a);
+
+    for(int i = 0; i < m; i++) {
+        int t;
+        cin >> t;
+
+        if(t == 1) {
             int i, v;
             cin >> i >> v;
-            st.set(i, v);
+            seg.upd(i,v);
         }else {
             int l, r;
             cin >> l >> r;
-            pii ans = st.query(l, r-1);
+            pii ans = seg.query(l,r-1);
             cout << ans.first << ' ' << ans.second << '\n';
         }
     }
