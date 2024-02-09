@@ -1,45 +1,22 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
 
 #define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
 
-using namespace std;
 using ll = long long;
 using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
 
-struct SegTree {
-    vector<int> seg;
-    int lr_start;
-    int lr_size = 1;
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
 
-    SegTree(vector<int> &x) {
-        setSize(x.size());
 
-        lr_start = seg.size() - lr_size;
-
-        for(int i = 0; i < x.size(); i++) {
-            seg[lr_start + i] = x[i];
-        }
-
-        for(int i = lr_start - 1; 0 <= i; i--) {
-            seg[i] = seg[2*i+1] ^ seg[2*i+2];
-        }
-    }
-
-    void setSize(int array_size) {
-        while(lr_size < array_size) lr_size *= 2;
-        seg.resize(2*lr_size-1, 0);
-    }
-
-    int query(int l, int r, int lx = 0, int rx = -1, int i = 0) {
-        if(rx == -1) rx = lr_size-1;
-
-        int m = (lx + rx)/2;
-
-        if(rx < l || r < lx) return 0;
-        if(l <= lx && rx <= r) return seg[i];
-        return query(l, r, lx, m, 2*i+1) ^ query(l, r, m+1, rx, 2*i+2);
-    }
-};
 
 int main() {
     fastio;
@@ -48,13 +25,16 @@ int main() {
     cin >> n >> q;
 
     vector<int> x(n);
-    for(int &num : x) cin >> num;
+    for(int& xi : x) cin >> xi;
 
-    SegTree seg(x);
+    vector<int> pref(n+1, 0);
+    for(int i = 1; i <= n; i++) {
+        pref[i] = pref[i-1] ^ x[i-1];
+    }
 
-    for(int i = 0, l, r; i < q; i++) {
-        cin >> l >> r;
-        l--; r--;
-        cout << seg.query(l, r) << '\n';
+    while(q--) {
+        int a, b;
+        cin >> a >> b;
+        cout << (pref[b] ^ pref[a-1]) << '\n';
     }
 }
