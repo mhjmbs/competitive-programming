@@ -47,7 +47,7 @@ struct SegmentTree {
         return merge( query(l, r, lx, mid, 2*i+1), query(l, r, mid+1, rx, 2*i+2) );
     }
 
-    T merge(T a, T b) {
-        return min(a,b);
+    T merge(T lc, T rc) {
+        return min(lc,rc);
     }
 };
