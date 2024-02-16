@@ -1,66 +1,47 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
 
 #define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
 
-using namespace std;
 using ll = long long;
 using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
 
-struct SegmentTree {
-    vector<ll> seg;
-    vector<ll> lazy;
-    int lr_size = 1;
-    int lr_start;
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
 
-    SegmentTree(vector<int>& x) {
-        setSize(x.size());
+template <typename T>
+struct BIT {
+    vector<T> bit;
 
-        lr_start = seg.size() - lr_size;
-
-        for(int i = 0; i < x.size(); i++) {
-            seg[lr_start + i] = x[i];
+    BIT(vector<T>& v) : bit(v.size()+1, 0) {
+        for(int i = 1; i < bit.size(); i++) {
+            if(i == 1) bit[i] += v[i-1];
+            else bit[i] += v[i-1] - v[i-2];
+            if(i+(i&-i) < bit.size()) bit[i+(i&-i)] += bit[i];
         }
-
-        lazy.resize(seg.size(), 0);
     }
 
-    void setSize(int array_size) {
-        while(lr_size < array_size) lr_size *=2;
-        seg.resize(2*lr_size-1,0);
-    }
-
-    void update(int l, int r, int u, int lx = 0, int rx = -1, int i = 0) {
-        if(rx == -1) rx = lr_size-1;
-
-        int m = (lx+rx)/2;
-
-        if(r < lx || rx < l) return;
-        else if(l <= lx && rx <= r) lazy[i] += u;
-        else update(l, r, u, lx, m, 2*i+1), update(l, r, u, m+1, rx, 2*i+2);
-    }
-
-    ll query(int k, int lx = 0, int rx = -1, int i = 0) {
-        if(rx == -1) rx = lr_size-1;
-
-        unlazy(i);
-
-        int m = (lx+rx)/2;
-
-        if(lx == k && rx == k) return seg[i];
-        else if(k <= m) return query(k, lx, m, 2*i+1);
-        else return query(k, m+1, rx, 2*i+2);
-    }
-
-    void unlazy(int i) {
-        if(lazy[i] != 0) {
-            if(lr_start <= i) {
-                seg[i] += lazy[i];
-            }else {
-                lazy[2*i+1] += lazy[i];
-                lazy[2*i+2] += lazy[i];
-            }
-            lazy[i] = 0;
+    void sum(int i, T val) {
+        while(i < bit.size()) {
+            bit[i] += val;
+            i += i&-i;
         }
+    }
+
+    T get(int i) {
+        T ans = 0;
+        while(i > 0) {
+            ans += bit[i];
+            i -= i&-i;
+        }
+        return ans;
     }
 };
 
@@ -70,23 +51,24 @@ int main() {
     int n, q;
     cin >> n >> q;
 
-    vector<int> x(n);
-    for(int &xi : x) cin >> xi;
+    vector<ll> x(n);
+    for(ll& xi : x) cin >> xi;
 
-    SegmentTree seg(x);
+    BIT<ll> bit(x);
 
-    for(int i = 0, tq; i < q; i++) {
+    while(q--) {
+        int tq;
         cin >> tq;
+
         if(tq == 1) {
-            int l, r, u;
-            cin >> l >> r >> u;
-            l--;r--;
-            seg.update(l, r, u);
+            int a, b, u;
+            cin >> a >> b >> u;
+            bit.sum(a, u);
+            bit.sum(b+1, -u);
         }else {
             int k;
             cin >> k;
-            k--;
-            cout << seg.query(k) << '\n';
+            cout << bit.get(k) << '\n';
         }
     }
 }
