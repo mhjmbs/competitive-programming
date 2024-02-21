@@ -1,50 +1,61 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
 
 using namespace std;
+using namespace __gnu_pbds;
+
+#define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+
+
 
 int main() {
-    ios::sync_with_stdio(0);
+    fastio;
 
-    int n;
+    ll n;
     cin >> n;
 
-    bool possible = n*(n+1)/2 % 2 == 0;
-
-    set<int> set1, set2;
-
-    if(possible) {
-
-        cout << "YES\n";
-
-        if(n % 2 == 0) {
-            for(int i = 1; i <= n; i += 4) {
-                set1.insert({i,i+3});
-                set2.insert({i+1,i+2});
-            }
-        }else {
-            set1.insert({1,2});
-            set2.insert(3);
-            for(int i = 4; i <= n; i += 4) {
-                set1.insert({i,i+3});
-                set2.insert({i+1,i+2});
-            }
-        }
-
-        cout << set1.size() << '\n';
-        for(auto it = set1.begin(); it != set1.end(); it++) {
-            cout << *it;
-            if(*it == *set1.rbegin()) cout << '\n';
-            else cout << ' ';
-        }
-
-        cout << set2.size() << '\n';
-        for(auto it = set2.begin(); it != set2.end(); it++) {
-            cout << *it;
-            if(*it == *set2.rbegin()) cout << '\n';
-            else cout << ' ';
-        }
-
-    }else {
+    if(n*(n+1)/2 % 2 == 1) {
         cout << "NO\n";
-    }    
+        return 0;
+    }
+
+    cout << "YES\n";
+
+    int curr = 1;
+
+    vector<int> group1, group2;
+
+    if((n-3)%4 == 0) {
+        group1.push_back(1);
+        group1.push_back(2);
+        group2.push_back(3);
+        curr = 4;
+    }
+
+    while(curr <= n) {
+        group1.push_back(curr);
+        group1.push_back(curr+3);
+        group2.push_back(curr+1);
+        group2.push_back(curr+2);
+        curr += 4;
+    }
+
+    cout << group1.size() << '\n';
+    for(int x : group1) cout << x << ' ';
+    cout << '\n';
+
+    cout << group2.size() << '\n';
+    for(int x : group2) cout << x << ' ';
+    cout << '\n';
 }
