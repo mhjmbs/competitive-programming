@@ -1,50 +1,40 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
 
 using namespace std;
+using namespace __gnu_pbds;
 
-int n;
+#define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
 
-void query(string s, vector<int> freq) {
-    if(s.size() == n) {
-        cout << s << '\n';
-    }else {
-        for(int i = 0; i < 26; i++) {
-            if(freq[i] > 0) {
-                freq[i]--;
-                query(s+char('a'+i), freq);
-                freq[i]++;
-            }
-        }
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+
+string s;
+set<string> ans;
+void backtracking(int i) {
+    if(i == s.size()) ans.insert(s); 
+    for(int j = i; j < s.size(); j++) {
+        swap(s[i],s[j]);
+        backtracking(i+1);
+        swap(s[i],s[j]);
     }
-}
-
-int fact(int x) {
-    int ans = 1;
-
-    for(int i = 1; i <= x; i++) ans *= i;
-
-    return ans;
 }
 
 int main() {
-    ios::sync_with_stdio(0);
+    fastio;
 
-    string s;
     cin >> s;
-    n = s.size();
-    vector<int> freq(26,0);
 
-    for(char c : s) freq[c-'a']++;
-    
-    int ans = fact(n);
-    for(int x : freq) ans /= fact(x);
-    cout << ans << '\n';
-    
-    for(int i = 0; i < 26; i++) {
-        if(freq[i] > 0) {
-            freq[i]--;
-            query({char('a'+i)}, freq);
-            freq[i]++;
-        }
-    }
+    backtracking(0);
+
+    cout << ans.size() << '\n';
+    for(const string& curr : ans) cout << curr << '\n';
 }
