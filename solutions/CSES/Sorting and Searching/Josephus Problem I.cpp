@@ -1,10 +1,23 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
 
 #define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
 
-using namespace std;
 using ll = long long;
+using ull = unsigned long long;
 using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+
+
 
 int main() {
     fastio;
@@ -12,25 +25,19 @@ int main() {
     int n;
     cin >> n;
 
-    vector<bool> taken(n+1, 0);
-    int count = 0, child = 1;
-    bool take_next = false;
+    set<int> s;
+    for(int i = 1; i <= n; i++) s.insert(i);
 
-    while(count < n) {
-        if(child == n+1) child = 1;
-        if(!taken[child]) {
-            if(take_next) {
-                taken[child] = true;
-                take_next = false;
-                count++;
+    auto it = s.begin();
 
-                cout << child;
-                if(count != n) cout << ' ';
-                else cout << '\n';
-            }else {
-                take_next = true;
-            }
-        }
-        child++;
+    while(!s.empty()) {
+        it++;
+        if(it == s.end()) it = s.begin();
+        cout << *it << ' ';
+        auto cp = it;
+        it++;
+        if(it == s.end()) it = s.begin();
+        s.erase(cp);
     }
+    cout << '\n';
 }
