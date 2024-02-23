@@ -1,15 +1,23 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
 #include <ext/pb_ds/tree_policy.hpp>
 #include <ext/pb_ds/assoc_container.hpp>
 
-#define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
-
 using namespace std;
 using namespace __gnu_pbds;
-using ll = long long;
-using pii = pair<int,int>;
 
-typedef tree<int,null_type,less<int>,rb_tree_tag,tree_order_statistics_node_update> ordered_set;
+#define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+
+
 
 int main() {
     fastio;
@@ -17,20 +25,17 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    ordered_set children;
+    ordered_set os;
+    for(int i = 1; i <= n; i++) os.insert(i);
 
-    for(int i = 1; i <= n; i++) children.insert(i);
+    int i = 0;
 
-    int curr = 0;
-
-    while(children.size() != 0) {
-        int skip = k % children.size();
-        curr = (curr+skip) % children.size();
-        auto it = children.find_by_order(curr);
-        children.erase(it);
-
-        cout << *it;
-        if(children.size() != 0) cout << ' ';
-        else cout << '\n';
+    while(!os.empty()) {
+        i = (i+k) %n;
+        auto it = os.find_by_order(i);
+        cout << *it << ' ';
+        os.erase(it);
+        n--;
     }
+    cout << '\n';
 }
