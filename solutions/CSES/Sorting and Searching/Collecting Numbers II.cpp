@@ -1,10 +1,23 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
 
 #define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
 
-using namespace std;
 using ll = long long;
+using ull = unsigned long long;
 using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+
+
 
 int main() {
     fastio;
@@ -12,30 +25,39 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<int> pos(n+1, INT_MAX), x(n+1);
-    for(int i = 1, inp; i <= n; i++) {
-        cin >> inp;
-        pos[inp] = i;
-        x[i] = inp;
-    }
-
-    int ans = 0;
+    vector<int> x(n+1), indexOf(n+1);
     for(int i = 1; i <= n; i++) {
-        if(pos[x[i]] < pos[x[i]-1]) ans++;
+        cin >> x[i];
+        indexOf[x[i]] = i;
     }
 
-    for(int i = 0, a, b; i < m; i++) {
+    set<int> rounds;
+
+    for(int i = 1; i <= n; i++) {
+        if(rounds.count(x[i]-1) > 0) {
+            rounds.erase(x[i]-1);
+        }
+        rounds.insert(x[i]);
+    }
+
+    int ans = rounds.size();
+
+    while(m--) {
+        int a, b;
         cin >> a >> b;
-        if(a > b) swap(a,b);
 
-        if(x[a]+1 <= n && a < pos[x[a]+1] && !(b <= pos[x[a]+1])) ans++;
-        if(x[b]-1 != 0 && pos[x[b]-1] < b && !(pos[x[b]-1] < a)) ans++;
+        if(x[a] != n && a < indexOf[x[a]+1] && b >= indexOf[x[a]+1]) ans++;
+        if(x[a] != n && a > indexOf[x[a]+1] && b <= indexOf[x[a]+1]) ans--;
+        if(x[a] != 1 && a > indexOf[x[a]-1] && b <= indexOf[x[a]-1]) ans++;
+        if(x[a] != 1 && a < indexOf[x[a]-1] && b >= indexOf[x[a]-1]) ans--;
 
-        if(x[a]-1 != 0 && !(pos[x[a]-1] < a) && pos[x[a]-1] <= b) ans--;
-        if(x[b]+1 <= n && !(b < pos[x[b]+1]) && a < pos[x[b]+1]) ans--;
+        if(x[b] != n && b < indexOf[x[b]+1] && a > indexOf[x[b]+1]) ans++;
+        if(x[b] != n && b > indexOf[x[b]+1] && a < indexOf[x[b]+1]) ans--;
+        if(x[b] != 1 && b > indexOf[x[b]-1] && a < indexOf[x[b]-1]) ans++;
+        if(x[b] != 1 && b < indexOf[x[b]-1] && a > indexOf[x[b]-1]) ans--;
 
-        swap(pos[x[a]],pos[x[b]]);
         swap(x[a],x[b]);
+        swap(indexOf[x[a]], indexOf[x[b]]);
 
         cout << ans << '\n';
     }
