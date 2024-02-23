@@ -1,10 +1,23 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
 
 #define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
 
-using namespace std;
 using ll = long long;
+using ull = unsigned long long;
 using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+
+
 
 int main() {
     fastio;
@@ -12,33 +25,38 @@ int main() {
     int x, n;
     cin >> x >> n;
 
-    multiset<int> sizes;
     set<pii> intervals;
+    intervals.emplace(0, x);
 
-    intervals.emplace(x, 1);
-    sizes.insert(x+1);
+    multiset<int> dist;
+    dist.insert(x);
 
-    for(int i = 0, tl; i < n; i++) {
-        cin >> tl;
-        auto it = intervals.lower_bound(make_pair(tl, INT_MIN));
-        pii curr = *it;
-        if(curr.second <= tl) {
-            sizes.erase(sizes.lower_bound(curr.first - curr.second + 1));
-            intervals.erase(it);
+    while(n--) {
+        int pi;
+        cin >> pi;
 
-            if(curr.second <= tl) {
-                intervals.emplace(tl, curr.second);
-                sizes.insert(tl - curr.second + 1);
-            }
+        auto it = intervals.upper_bound({pi,INT_MAX});
+        it--;
 
-            if(tl+1 <= curr.first) {
-                intervals.emplace(curr.first, tl+1);
-                sizes.insert(curr.first - (tl+1) + 1);
-            }
+        auto [l,r] = *it;
+        intervals.erase(it);
+
+        if(l == 0 && r == x) dist.erase(dist.lower_bound(r-l));
+        else if(l == 0 || r == x) dist.erase(dist.lower_bound(r-l+1));
+        else dist.erase(dist.lower_bound(r-l+2));
+
+        if(l <= pi-1) {
+            intervals.emplace(l, pi-1);
+            if(l == 0) dist.insert(pi);
+            else dist.insert(pi-l+1);
+        }
+        if(pi+1 <= r) {
+            intervals.emplace(pi+1, r);
+            if(r == x) dist.insert(r-pi);
+            else dist.insert(r-pi+1);
         }
 
-        cout << *sizes.rbegin();
-        if(i != n-1) cout << ' ';
-        else cout << '\n';
+        cout << *dist.rbegin() << ' ';
     }
+    cout << '\n';
 }
