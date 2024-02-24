@@ -19,7 +19,7 @@ using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_o
 
 vector<vector<int>> adjacencies;
 vector<int> c;
-vector<map<int,int>> poss;
+vector<map<int,ll>> poss;
 ll ans;
 
 void dfs(int node, int parent) {
@@ -65,7 +65,7 @@ int main() {
         }
 
         ans = 0;
-        poss.assign(n+1, map<int,int>());
+        poss.assign(n+1, map<int,ll>());
 
         dfs(1,-1);
 
