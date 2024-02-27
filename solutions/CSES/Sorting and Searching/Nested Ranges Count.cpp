@@ -1,15 +1,23 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
 #include <ext/pb_ds/tree_policy.hpp>
 #include <ext/pb_ds/assoc_container.hpp>
  
-#define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
- 
 using namespace std;
 using namespace __gnu_pbds;
-using ll = long long;
-using pii = pair<int,int>;
  
-typedef tree<int,null_type,less_equal<int>,rb_tree_tag,tree_order_statistics_node_update> ordered_multiset;
+#define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
+ 
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+ 
+using ordered_set = tree<pii, null_type, less<pii>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+ 
+ 
  
 int main() {
     fastio;
@@ -17,48 +25,43 @@ int main() {
     int n;
     cin >> n;
  
-    vector<pii> original_ranges(n), ranges(n);
-    for(pii &curr : ranges) cin >> curr.first >> curr.second;
-    original_ranges = ranges;
- 
-    auto earliest_end = [](pii a, pii b) {
-        if(a.second < b.second) return true;
-        else if(a.second > b.second) return false;
-        else return a.first > b.first;
-    };
-    sort(ranges.begin(), ranges.end(), earliest_end);
- 
-    ordered_multiset starts;
-    map<pii,int> ans1;
- 
-    for(pii curr : ranges) {
-        ans1[curr] += starts.size() - starts.order_of_key(curr.first);
-        starts.insert(curr.first);
-    }
- 
-    ordered_multiset ends;
-    map<pii,int> ans2;
-    
-    auto earliest_start = [](pii a, pii b) {
-        if(a.first < b.first) return true;
-        else if(a.first > b.first) return false;
-        else return a.second > b.second;
-    };
-    sort(ranges.begin(), ranges.end(), earliest_start);
- 
-    for(pii curr : ranges) {
-        ans2[curr] += ends.size() - ends.order_of_key(curr.second);
-        ends.insert(curr.second);
-    }
+    ordered_set sRanges, sReversedRanges;
+    vector<tiii> ranges(n);
+    vector<int> contains(n, 0), isContained(n, 0);
  
     for(int i = 0; i < n; i++) {
-        cout << ans1[original_ranges[i]];
-        if(i != n-1) cout << ' ';
-        else cout << '\n';
+        int l, r;
+        cin >> l >> r;
+        ranges[i] = {l,r,i};
+        sRanges.insert({l,r});
+        sReversedRanges.insert({r,l});
     }
+ 
+    sort(ranges.begin(), ranges.end(), [](tiii a, tiii b) {
+        if(get<0>(a) == get<0>(b)) return get<1>(a) > get<1>(b);
+        return get<0>(a) < get<0>(b);
+    });
+ 
     for(int i = 0; i < n; i++) {
-        cout << ans2[original_ranges[i]];
-        if(i != n-1) cout << ' ';
-        else cout << '\n';
+        auto [l,r,j] = ranges[i];
+        sReversedRanges.erase({r,l});
+        contains[j] += sReversedRanges.order_of_key({r,INT_MAX});
     }
+ 
+    sort(ranges.begin(), ranges.end(), [](tiii a, tiii b) {
+        if(get<1>(a) == get<1>(b)) return get<0>(a) > get<0>(b);
+        return get<1>(a) < get<1>(b);
+    });
+ 
+    for(int i = 0; i < n; i++) {
+        auto[l,r,j] = ranges[i];
+        sRanges.erase({l,r});
+        isContained[j] += sRanges.order_of_key({l,INT_MAX});
+    }
+ 
+    for(int x : contains) cout << x << ' ';
+    cout << '\n';
+ 
+    for(int x : isContained) cout << x << ' ';
+    cout << '\n';
 }
