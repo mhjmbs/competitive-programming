@@ -1,10 +1,23 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
 
 #define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
 
-using namespace std;
 using ll = long long;
+using ull = unsigned long long;
 using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+
+
 
 int main() {
     fastio;
@@ -12,28 +25,35 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> x(n);
-    for(int &xi : x) cin >> xi;
+    vector<pii> x(n);
+    for(int i = 0; i < n; i++) {
+        cin >> x[i].first;
+        x[i].second = i+1;
+    }
 
-    map<int,vector<int>> occur;
-    for(int i = 0; i < n; i++) occur[x[i]].push_back(i+1);
+    sort(x.begin(), x.end());
 
-    set<int> indexes;
-    vector<int> ans(n, 0);
+    set<int> pos;
+    vector<int> ans(n+1, 0);
+    queue<int> lastI;
+    int last = -1;
 
-    for(auto curr : occur) {
-        for(int index : curr.second) {
-            auto it = indexes.lower_bound(index);
-            if(it != indexes.begin()) it--;
-            if(it != indexes.end() && *it < index) ans[index-1] = *it;
+    for(auto [xi, i] : x) {
+        if(xi != last) {
+            while(!lastI.empty()) {
+                pos.insert(lastI.front());
+                lastI.pop();
+            }
         }
 
-        for(int index : curr.second) indexes.insert(index);
+        lastI.push(i);
+        last = xi;
+
+        auto it = pos.lower_bound(i);
+        if(it != pos.begin()) it--;
+        if(it != pos.end() && *it < i) ans[i] = *it;
     }
 
-    for(int i = 0; i < n; i++) {
-        cout << ans[i];
-        if(i != n-1) cout << ' ';
-        else cout << '\n';
-    }
+    for(int i = 1; i <= n; i++) cout << ans[i] << ' ';
+    cout << '\n';
 }
