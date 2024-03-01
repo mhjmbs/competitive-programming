@@ -1,42 +1,50 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
 
 #define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
 
-using namespace std;
 using ll = long long;
+using ull = unsigned long long;
 using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+
+
 
 int main() {
     fastio;
 
     int n, k;
-    cin >> n >> k;
+    cin >> n >> k;  
 
-    vector<pii> movies;
-    for(int i = 0, a, b; i < n; i++) {
-        cin >> a >> b;
-        movies.emplace_back(a,b);
-    }
+    vector<pii> intervals(n);
+    for(auto& [r,l] : intervals) cin >> l >> r;
 
-    auto earliest_end = [](pii a, pii b) {
-        if(a.second < b.second) return true;
-        else if(a.second > b.second) return false;
-        else return a.first < b.first;
-    };
-    sort(movies.begin(), movies.end(), earliest_end);
+    sort(intervals.begin(), intervals.end());
 
-    multiset<ll> members;
-    for(int i = 0; i < k; i++) members.insert(0);
-
+    multiset<int> rs;
     int ans = 0;
 
-    for(pii movie : movies) {
-        auto it = members.upper_bound(movie.first);
-        if(it != members.begin()) it--;
-
-        if(it != members.end() && *it <= movie.first) {
-            members.erase(it);
-            members.insert(movie.second);
+    for(auto [r,l] : intervals) {
+        if(rs.empty()) {
+            rs.insert(r);
+            ans++;
+        }else if(*rs.begin() <= l) {
+            auto it = rs.upper_bound(l);
+            it--;
+            rs.erase(it);
+            rs.insert(r);
+            ans++;
+        }else if(rs.size() < k) {
+            rs.insert(r);
             ans++;
         }
     }
