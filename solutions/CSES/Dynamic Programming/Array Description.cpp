@@ -1,44 +1,50 @@
-#include "bits/stdc++.h"
-#define mod (int(1e9) + 7)
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
 
 using namespace std;
+using namespace __gnu_pbds;
+
+#define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+
+
 
 int main() {
-    ios::sync_with_stdio(0);
+    fastio;
 
     int n, m;
     cin >> n >> m;
 
-    vector<int> a(n);
-    for(int& ai : a) cin >> ai;
+    int M = 1e9+7;
 
-    vector<vector<int>> dp(n, vector<int>(m+1, 0));
-    
-    if(a[0] != 0) {
-        dp[0][a[0]] = 1;
-    }else {
-        for(int i = 1; i <= m; i++) {
-            dp[0][i] = 1;
-        }
-    }
+    vector<int> x(n);
+    for(int& xi : x) cin >> xi;
 
-    for(int s = 1; s < n; s++) {
-        if(a[s] != 0) {
-            dp[s][a[s]] = (dp[s][a[s]] + dp[s-1][a[s]-1]) % mod;
-            dp[s][a[s]] = (dp[s][a[s]] + dp[s-1][a[s]]) % mod;
-            if(a[s]+1 <= m) dp[s][a[s]] = (dp[s][a[s]] + dp[s-1][a[s]+1]) % mod;
-        }else {
-            for(int l = 1; l <= m; l++) {
-                dp[s][l] = (dp[s][l] + dp[s-1][l-1]) % mod;
-                dp[s][l] = (dp[s][l] + dp[s-1][l]) % mod;
-                if(l+1 <= m) dp[s][l] = (dp[s][l] + dp[s-1][l+1]) % mod;
+    vector<ll> dp(m+2, 0);
+    if(x[0] != 0) dp[x[0]] = 1;
+    else fill(dp.begin()+1, dp.end()-1, 1);
+
+    for(int i = 1; i < n; i++) {
+        vector<ll> ndp(m+2, 0);
+        if(x[i] == 0) {
+            for(int num = 1; num <= m; num++) {
+                ndp[num] = (dp[num-1] + dp[num] + dp[num+1]) % M;
             }
+        }else {
+            ndp[x[i]] = (dp[x[i]-1] + dp[x[i]] + dp[x[i]+1]) % M;
         }
+        swap(dp, ndp);
     }
 
-    int ans = 0;
-    
-    for(int i = 1; i <= m; i++) ans = (ans + dp[n-1][i]) % mod;
-
-    cout << ans << '\n';
+    cout << accumulate(dp.begin(), dp.end(), 0LL) % M << '\n';
 }
