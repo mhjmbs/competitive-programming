@@ -1,53 +1,54 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
 
 #define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
 
-using namespace std;
 using ll = long long;
+using ull = unsigned long long;
 using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
 
-int n, k;
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
 
-bool process(vector<int> x, ll m) {
-    ll currSum = 0, divisions = 1;
 
-    for(int i = 0; i < n; i++) {
-        if(currSum + x[i] > m) {
-            if(x[i] > m) {
-                return false;
-            }else {
-                currSum = x[i];
-                divisions++;
-            }
-        }else {
-            currSum += x[i];
-        }
-    }
-
-    if(divisions > k) return false;
-    return true;
-}
 
 int main() {
     fastio;
 
+    int n, k;
     cin >> n >> k;
 
-    vector<int> x(n);
-    for(int &xi : x) cin >> xi;
+    vector<int> a(n);
+    for(int& ai : a) cin >> ai;
 
-    ll l = 0, r = ll(1e15), ans = -1;
+    ll l = *max_element(a.begin(), a.end()), r = 1e15, ans = -1;
 
     while(l <= r) {
-        ll m = (l+r)/2;
+        ll mid = (l+r)/2;
 
-        bool possible = process(x, m);
+        int count = 1;
+        ll sum = 0;
 
-        if(possible) {
-            ans = m;
-            r = m-1;
+        for(int i = 0; i < n; i++) {
+            if(sum+a[i] > mid) {
+                sum = 0;
+                count++;
+            }
+            sum += a[i];
+        }
+
+        if(count <= k) {
+            ans = mid;
+            r = mid-1;
         }else {
-            l = m+1;
+            l = mid+1;
         }
     }
 
