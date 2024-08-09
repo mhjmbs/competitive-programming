@@ -1,14 +1,13 @@
 #pragma once
-#include <tuple>
-#include <cstdlib>
 
-
-namespace cp {
+#include <bits/stdc++.h>
 
 using namespace std;
 
 using ll = long long;
 using tlll = tuple<ll,ll,ll>;
+
+namespace cp {
 
 tlll pos_egcd(ll a, ll b) {
     if(b == 0) {

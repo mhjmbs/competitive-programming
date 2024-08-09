@@ -4,6 +4,8 @@
 
 using namespace std;
 
+namespace cp {
+
 template<typename T>
 struct frac {
     T nom;
@@ -54,3 +56,5 @@ struct frac {
         return strong_ordering::equal;
     }
 };
+
+}

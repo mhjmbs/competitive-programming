@@ -1,7 +1,7 @@
 #pragma once
 
-#include <bits/stdc++.h>
 #include "../math/binary-exponentiation.hpp"
+#include <bits/stdc++.h>
 
 using namespace std;
 

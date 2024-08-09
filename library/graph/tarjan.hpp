@@ -1,9 +1,10 @@
 #pragma once
 
-#include <vector>
-#include <stack>
+#include <bits/stdc++.h>
 
 using namespace std;
+
+namespace cp {
 
 void dfs(int node, int &curr_time, vector<vector<int>> &adjacencies, vector<int> &tin, vector<int> &lowlink, stack<int> &s, vector<bool> &in_s, vector<vector<int>> &sccs) {
     lowlink[node] = tin[node] = curr_time;
@@ -47,4 +48,6 @@ vector<vector<int>> tarjan(vector<vector<int>> &adjacencies) {
     }
 
     return sccs;
+}
+
 }

@@ -4,6 +4,8 @@
 
 using namespace std;
 
+namespace cp {
+
 template <typename T>
 struct SegmentTree {
     inline static const T neutral = numeric_limits<T>::max();
@@ -51,3 +53,5 @@ struct SegmentTree {
         return min(lc,rc);
     }
 };
+
+}

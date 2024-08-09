@@ -1,12 +1,12 @@
 #pragma once
-#include <tuple>
-#include <cstdlib>
 
-namespace cp {
+#include <bits/stdc++.h>
 
 using namespace std;
 
 using ll = long long;
+
+namespace cp {
 
 ll gcd(ll a, ll b) {
     a = abs(a);

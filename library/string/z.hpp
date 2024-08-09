@@ -4,6 +4,8 @@
 
 using namespace std;
 
+namespace cp {
+
 vector<int> z_func(const string &s) {
     vector<int> z(s.size());
     z[0] = 0;
@@ -23,4 +25,6 @@ vector<int> z_func(const string &s) {
 
     z[0] = s.size();
     return z;
+}
+
 }

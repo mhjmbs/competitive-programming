@@ -4,6 +4,8 @@
 
 using namespace std;
 
+namespace cp {
+
 class Dsu {
     vector<int> parent;
     vector<int> height;
@@ -31,3 +33,5 @@ class Dsu {
         }
     }
 };
+
+}

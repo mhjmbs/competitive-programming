@@ -4,6 +4,8 @@
 
 using namespace std;
 
+namespace cp {
+
 vector<int> kmp(const string &s) {
     vector<int> pi(s.size());
     pi[0] = 0;
@@ -17,4 +19,6 @@ vector<int> kmp(const string &s) {
     }
 
     return pi;
+}
+
 }
