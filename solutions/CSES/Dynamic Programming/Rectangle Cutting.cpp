@@ -1,10 +1,25 @@
-#include "bits/stdc++.h"
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
 
 #define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
 
-using namespace std;
 using ll = long long;
+using ull = unsigned long long;
 using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+
+mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+
+
 
 int main() {
     fastio;
@@ -12,15 +27,22 @@ int main() {
     int a, b;
     cin >> a >> b;
 
-    int ans = 0;
-    vector<vector<int>> dp(501, vector<int>(501, INT_MAX));
+    vector<vector<int>> dp(a+1, vector<int>(b+1, 1e9));
 
-    for(int i = 1; i <= 500; i++) dp[i][i] = 0;
-
-    for(int i = 1; i <= a; i++) {
-        for(int j = 1; j <= b; j++) {
-            for(int cut = 1; cut < i; cut++) dp[i][j] = min(dp[i][j], dp[cut][j] + dp[i-cut][j] + 1);
-            for(int cut = 1; cut < j; cut++) dp[i][j] = min(dp[i][j], dp[i][cut] + dp[i][j-cut] + 1);
+    for(int i = 0; i <= a; i++) {
+        for(int j = 0; j <= b; j++) {
+            if(i == j) {
+                dp[i][j] = 0;
+                continue;
+            } 
+        
+            for(int k = 1; k < i; k++) {
+               dp[i][j] = min(dp[i][j], dp[k][j]+dp[i-k][j]+1); 
+            }
+            
+            for(int k = 1; k < j; k++) {
+               dp[i][j] = min(dp[i][j], dp[i][k]+dp[i][j-k]+1); 
+            }
         }
     }
 
