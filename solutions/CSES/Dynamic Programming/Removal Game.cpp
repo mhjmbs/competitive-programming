@@ -1,57 +1,49 @@
-#include "bits/stdc++.h"
- 
-#define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
- 
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+
 using namespace std;
+using namespace __gnu_pbds;
+
+#define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
+
 using ll = long long;
+using ull = unsigned long long;
 using pii = pair<int,int>;
 using pll = pair<ll,ll>;
- 
-ll memo[5000][5000][2];
-int x[5000];
- 
-ll dp(int l, int r, int p) {
-    if(memo[l][r][p] != LONG_LONG_MIN) {
-        return memo[l][r][p];
-    }
- 
-    if(l == r) {
-        if(p == 0) return memo[l][r][p] = x[l];
-        else return memo[l][r][p] = -x[l];
-    }
- 
-    if(p == 0) {
-        if(dp(l+1, r, 1) + x[l] > dp(l, r-1, 1) + x[r]) {
-            return memo[l][r][p] = dp(l+1, r, 1) + x[l];
-        }else {
-            return memo[l][r][p] = dp(l, r-1, 1) + x[r];
-        }
-    }else {
-        if(dp(l+1, r, 0) - x[l] < dp(l, r-1, 0) - x[r]) {
-            return memo[l][r][p] = dp(l+1, r, 0) - x[l];
-        }else {
-            return memo[l][r][p] = dp(l, r-1, 0)- x[r];
-        }
-    }
-}
- 
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+
+mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+
+
+
 int main() {
     fastio;
- 
+
     int n;
     cin >> n;
- 
-    ll sum = 0;
+
+    int x[5000];
+    for(int i = 0; i < n; i++) cin >> x[i];
+
+
+    ll dp[n][n][2];
+
     for(int i = 0; i < n; i++) {
-        cin >> x[i];
-        sum += x[i];
+        dp[i][i][0] = x[i];
+        dp[i][i][1] = 0;
     }
- 
-    for(int i = 0; i < n; i++) {
-        for(int j = 0; j < n; j++) {
-            for(int k = 0; k < 2; k++) memo[i][j][k] = LONG_LONG_MIN;
+
+    for(int sz = 2; sz <= n; sz++) {
+        for(int l = 0, r = l+sz-1; r < n; l++, r = l+sz-1) {
+            dp[l][r][0] = max(dp[l+1][r][1] + x[l], dp[l][r-1][1] + x[r]);  
+            dp[l][r][1] = min(dp[l+1][r][0], dp[l][r-1][0]);  
         }
     }
- 
-    cout << (sum + max(dp(0, n-1, 0), dp(0, n-1, 1)))/2 << '\n';
+
+    cout << dp[0][n-1][0] << '\n';
 }
