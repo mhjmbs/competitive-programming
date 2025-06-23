@@ -4,34 +4,24 @@
 
 using namespace std;
 
-namespace cp {
+struct Dsu {
+    vector<int> p, h;
 
-class Dsu {
-    vector<int> parent;
-    vector<int> height;
-
-    public:
-
-    Dsu(int n) {
-        height.resize(n, 0);
-        parent.resize(n, -1);
+    Dsu(int n) : h(n), p(n) {
+        iota(p.begin(), p.end(), 0);
     }
 
     int find(int u) {
-        return parent[u] == -1 ? u : parent[u] = find(parent[u]);
+        return (p[u] == u) ? u : p[u] = find(p[u]);
     }
 
     void merge(int u, int v) {
         u = find(u);
         v = find(v);
-
         if(u != v) {
-            if(height[u] < height[v]) swap(u, v);
-
-            parent[v] = u;
-            height[u] = max(height[u], height[v]+1);
+            if(h[u] < h[v]) swap(u, v);
+            p[v] = u;
+            h[u] = max(h[u], h[v]+1);
         }
     }
 };
-
-}
