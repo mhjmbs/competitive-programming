@@ -17,77 +17,59 @@ using tlll = tuple<ll,ll,ll>;
 using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
 using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
 
-vector<int> primes, pfac;
+mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
 
-vector<int> run_sieve(int N) {
-	vector<int>mu(N+1,-1), phi(N+1);
-	pfac.resize(N+1);
-    primes.reserve(N+1); mu[1] = phi[1] = 1;
-	for (int i = 2; i <= N; ++i) {
-		if (!pfac[i])
-			pfac[i] = i, phi[i] = i-1, primes.push_back(i);
-		for (int p : primes) {
-			if (p > N/i) break;
-			pfac[p * i] = p; mu[p * i] *= mu[i];
-			phi[p * i] = phi[i] * phi[p];
-			if (i % p == 0) {
-				mu[p * i] = 0; phi[p * i] = phi[i] * p;
-				break;
-			}
-		}
-	} return primes;
+vector<int> lp;
+vector<int> sets(1e6);
+const ll m = 1e9+7;
+
+template <typename T>
+vector<T> linear_sieve(T n) {
+    vector<T> lp(n+1), p;
+    for(T i = 2; i <= n; i++) {
+        if(lp[i] == 0) {
+            lp[i] = i;
+            p.push_back(i);
+        }
+        for(int j = 0; i*p[j] <= n; j++) {
+            lp[i*p[j]] = p[j];
+            if(lp[i] == p[j]) break;
+        }
+    }
+    return lp;
 }
 
-template<typename T>
-vector<pair<T, int>> prime_factorize(T n) {
-	vector<pair<T, int>> factors;
-	while(n != 1) {
-		T p = pfac[n];
-		int exp = 0;
-		do {
-			n /= p;
-			++exp;
-		} while(n % p == 0);
-		factors.push_back({p, exp});
-	}
-	for (T p : primes) {
-		if (p * p > n) break;
-		if (p * p == 0) {
-			factors.push_back({p, 0});
-			do {
-				n /= p;
-				++factors.back().second;
-			} while(n % p == 0);
-		}
-	}
-	if (n > 1) factors.push_back({n, 1});
-	return factors;
+vector<int> factor(int x) {
+    vector<int> p;
+    while(x > 1) {
+        p.push_back(lp[x]);
+        x /= lp[x];
+    }
+    sort(p.begin(), p.end());
+    p.erase(unique(p.begin(), p.end()), p.end());
+    return p;
 }
 
-vector<int> sets(1e6+1, 0);
-
-void compute(vector<pii>& factors, int curr, int i) {
-    if(i == factors.size()) {
+void subsets(int i, vector<int>& p, int curr) {
+    if(i == p.size()) {
         sets[curr]++;
         return;
     }
-    compute(factors, curr*factors[i].first, i+1);
-    compute(factors, curr, i+1);
+    subsets(i+1, p, curr);
+    subsets(i+1, p, curr*p[i]);
 }
 
-int inc_exc(vector<pii>& factors, int curr, int i, int count) {
-    int ans = 0;
-    if(i == factors.size()) {
-        if(count == 0) return 0;
-        return count%2 != 0 ? sets[curr] : -sets[curr];
+int inc_exc(int i, vector<int>& p, int curr, int cnt) {
+    if(i == p.size()) {
+        return (cnt % 2 != 0) ? sets[curr] : -sets[curr];
     }
-    ans += inc_exc(factors, curr*factors[i].first, i+1, count+1);
-    ans += inc_exc(factors, curr, i+1, count);
-
+    int ans = 0;
+    ans += inc_exc(i+1, p, curr, cnt);
+    ans += inc_exc(i+1, p, curr*p[i], cnt+1);
     return ans;
 }
 
-ll binExp(ll a, ll b, ll m) {
+ll bin_exp(ll a, ll b) {
     ll ans = 1;
     while(b > 0) {
         if(b&1) ans = ans*a % m;
@@ -99,26 +81,31 @@ ll binExp(ll a, ll b, ll m) {
 
 int main() {
     fastio;
+    
+    lp = linear_sieve<int>(1e6);
 
-    int n, q;
+    int n;
     cin >> n;
-
-    run_sieve(1e6);
 
     for(int i = 0; i < n; i++) {
         int vi;
         cin >> vi;
-        vector<pii> factors = prime_factorize(vi);
-        compute(factors, 1, 0);
+        vector<int> p = factor(vi);
+        subsets(0, p, 1);
     }
 
+    sets[1] = 0;
+
+    int q;
     cin >> q;
+
     while(q--) {
         int xi;
         cin >> xi;
 
-        vector<pii> factors = prime_factorize(xi);
-        int ans = inc_exc(factors, 1, 0, 0);
-        cout << binExp(2, n-ans, 1e9+7) << '\n';
+        vector<int> p = factor(xi);
+        int ans = inc_exc(0, p, 1, 0);
+
+        cout << bin_exp(2, n-ans) << '\n';
     }
 }
