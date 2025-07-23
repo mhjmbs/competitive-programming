@@ -19,34 +19,30 @@ using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_o
 
 mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
 
+template <typename T>
 struct SuffixArray {
     int n;
     vector<int> sa, c;
 
-    SuffixArray(string s) : n(s.size()+1), sa(n), c(n) {
-        s += '$';
+    SuffixArray(T s) : n(s.size()+1), sa(n), c(n) {
+        s.push_back(numeric_limits<typename T::value_type>::min());
 
         iota(sa.begin(), sa.end(), 0);
-        sort(sa.begin(), sa.end(), [&s](int i, int j) {return s[i] < s[j];});
-        for(int i = 0; i < n; i++) {
-            c[i] = (s[i] >= 'a') ? s[i]-'a'+1 : 0;
-        }
+        sort(sa.begin(), sa.end(), [&s](int i, int j) { return s[i] < s[j]; });
+        copy(s.begin(), s.end(), c.begin());
 
         for(int k = 0; (1<<k) < n; k++) {
-            vector<int> nc(n);
-            
-            sort(sa.begin(), sa.end(), [k, this](int i, int j) {
+            sort(sa.begin(), sa.end(), [this, k](int i, int j) {
                 if(c[i] != c[j]) return c[i] < c[j];
-                return c[(i+(1<<k))%n] < c[(j+(1<<k))%n];
+                return c[(i+(1<<k)) % n] < c[(j+(1<<k)) % n];
             });
-            
-            for(int i = 1; i < n; i++) {
-                nc[sa[i]] = nc[sa[i-1]];
-                if(c[sa[i]] != c[sa[i-1]]) nc[sa[i]]++;
-                else if(c[(sa[i]+(1<<k))%n] != c[(sa[i-1]+(1<<k))%n]) nc[sa[i]]++;
-            }
 
-            swap(c,nc);
+            vector<int> nc(n);
+            for(int i = 1; i < n; i++) {
+                nc[sa[i]] = nc[sa[i-1]] + (c[sa[i-1]] != c[sa[i]] || c[(sa[i-1] + (1<<k)) % n] != c[(sa[i] + (1<<k)) % n]);
+            }
+            
+            swap(c, nc);
         }
     }
 };
@@ -59,8 +55,8 @@ int main() {
 
     SuffixArray sa(s);
 
-    for(int i = 0; i < sa.sa.size(); i++) {
-        cout << sa.sa[i] << ' ';
+    for(int i : sa.sa) {
+        cout << i << ' ';
     }
     cout << '\n';
 }
