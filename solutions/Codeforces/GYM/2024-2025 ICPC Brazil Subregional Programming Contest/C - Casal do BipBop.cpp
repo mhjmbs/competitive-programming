@@ -17,182 +17,106 @@ using tlll = tuple<ll,ll,ll>;
 using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
 using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
 
-static std::mt19937_64 twister(1337);
+mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
 
-ll rng() {
-    return rand();
-}
+template <typename T>
+struct SuffixArray {
+    int n;
+    vector<int> sa, c, pos, lcp;
 
-template<typename T, typename Cmp=less<T>>
-struct rmq_t : private Cmp {
-	int N = 0;
-	vector<vector<T>> table; 
-	const T& min(const T& a, const T& b) const { return Cmp::operator()(a, b) ? a : b; }
-	rmq_t() {}
-	rmq_t(const vector<T>& values) : N(int(values.size())), table(__lg(N) + 1) {
-		table[0] = values;
-		for (int a = 1; a < int(table.size()); ++a) {
-			table[a].resize(N - (1 << a) + 1);
-			for (int b = 0; b + (1 << a) <= N; ++b) 
-				table[a][b] = min(table[a-1][b], table[a-1][b+(1<<(a-1))]); 
-		}
-	}
-	T query(int a, int b) const { 
-		int lg = __lg(b - a);
-		return min(table[lg][a], table[lg][b - (1 << lg) ]);
-	}
-};
+    SuffixArray(T s) : n(s.size()+1), sa(n), c(n), pos(n), lcp(n-1) {
+        s.push_back(numeric_limits<typename T::value_type>::min());
 
-struct suffix_array_t { ///start-hash
-	int N, H; vector<int> sa, invsa, lcp;
-	rmq_t<pair<int, int>> rmq;
-	bool cmp(int a, int b) { return invsa[a+H] < invsa[b+H]; }
-	void ternary_sort(int a, int b) {
-		if (a == b) return;
-		int md = sa[a+rng() % (b-a)], lo = a, hi = b;
-		for (int i = a; i < b; ++i) if (cmp(sa[i], md))
-			swap(sa[i], sa[lo++]);
-		for (int i = b-1; i >= lo; --i) if (cmp(md, sa[i]))
-			swap(sa[i], sa[--hi]);
-		ternary_sort(a, lo);
-		for (int i = lo; i < hi; ++i) invsa[sa[i]] = hi-1;
-		if (hi-lo == 1) sa[lo] = -1;
-		ternary_sort(hi, b);
-	}
-	suffix_array_t() {} ///end-hash
-	template<typename I> ///start-hash
-	suffix_array_t(I begin, I end): N(int(end-begin)+1), sa(N) {
-		vector<int> v(begin, end); v.push_back(INT_MIN);
-		invsa = v; iota(sa.begin(), sa.end(), 0);
-		H = 0; ternary_sort(0, N);
-		for(H = 1; H <= N; H *= 2) for(int j=0, i=j; i!=N; i=j)
-				if (sa[i] < 0) {
-					while (j < N && sa[j] < 0) j += -sa[j];
-					sa[i] = -(j - i);
-				} else {j = invsa[sa[i]] + 1; ternary_sort(i, j);}
-		for (int i = 0; i < N; ++i) sa[invsa[i]] = i;
-		lcp.resize(N-1); int K = 0;
-		for (int i = 0; i < N-1; ++i) {
-			if(invsa[i] > 0) while(v[i+K] == v[sa[invsa[i]-1]+K])++K;
-			lcp[invsa[i]-1] = K; K = max(K - 1, 0);
-		}
-		vector<pair<int, int>> lcp_index(N-1);
-		for (int i = 0; i < N-1; ++i) lcp_index[i] = {lcp[i], 1+i};
-		rmq = rmq_t<pair<int, int>>(std::move(lcp_index));
-	} ///end-hash
-	auto rmq_query(int a, int b) const {return rmq.query(a,b);}
-	auto get_split(int a, int b) const {return rmq.query(a,b-1);}
-	int get_lcp(int a, int b) const { ///start-hash
-		if (a == b) return N -1 - a;
-		a = invsa[a], b = invsa[b];
-		if (a > b) swap(a, b);
-		return rmq_query(a, b).first;
-	} ///end-hash
-};
+        iota(sa.begin(), sa.end(), 0);
+        copy(s.begin(), s.end(), c.begin());
+        normalize(s);
+        counting_sort();
 
-template<typename T>
-struct frac {
-    T nom;
-    T den;
+        for(int k = 0; (1<<k) < n; k++) {
+            for(int i = 0; i < n; i++) sa[i] = (sa[i]-(1<<k) + n) % n;
+            counting_sort();
 
-    frac(T nom, T den) : nom{nom}, den{den} {}
-    frac(T nom) : frac(nom,1) {}
+            vector<int> nc(n);
+            for(int i = 1; i < n; i++) {
+                nc[sa[i]] = nc[sa[i-1]] + (c[sa[i-1]] != c[sa[i]] || c[(sa[i-1] + (1<<k)) % n] != c[(sa[i] + (1<<k)) % n]);
+            }
+            
+            swap(c, nc);
+        }
 
-    static pair<frac,frac> equalize(frac a, frac b) {
-        T cmn = lcm(a.den, b.den);
-        a = {a.nom*(cmn/a.den), cmn};
-        b = {b.nom*(cmn/b.den), cmn};
-        return {a,b};
+        for(int i = 0; i < n; i++) pos[sa[i]] = i;
+
+        kasai(s);
     }
 
-    void reduce() {
-        T GCD = gcd(nom,den);
-        nom /= GCD;
-        den /= GCD;
+    void normalize(T s) {
+        vector<pair<int, int>> v(n);
+        for(int i = 0; i < n; i++) v[i] = {s[i], i};
+        sort(v.begin(), v.end());
+        c[v[0].second] = 0;
+        for(int i = 1; i < n; i++) c[v[i].second] = c[v[i-1].second] + (v[i-1].first != v[i].first);
     }
 
-    frac inverse() const { return {den,nom}; }
-
-    frac& operator+=(frac other) {
-        auto [a,b] = equalize(*this, other);
-        return *this = {a.nom+b.nom, a.den};
-    }
-    frac& operator*=(frac other) { return *this = {nom*other.nom, den*other.den}; }
-    frac& operator-=(frac other) { return *this += -other; }
-    frac& operator/=(frac other) { return *this *= other.inverse(); }
-
-    frac operator-() const { return {-nom,den}; }
-
-    frac operator+(frac other) const { return frac(*this) += other; }
-    frac operator*(frac other) const { return frac(*this) *= other; }
-    frac operator-(frac other) const { return frac(*this) -= other; }
-    frac operator/(frac other) const { return frac(*this) /= other; }
-
-    bool operator==(frac other) const {
-        auto[a,b] = equalize(*this, other);
-        return a.nom == b.nom;
+    void counting_sort() {
+        vector<int> nsa(n), cnt(n);
+        for(int ci : c) cnt[ci]++;
+        for(int i = 1; i < n; i++) cnt[i] += cnt[i-1];
+        for(int i = n-1; i >= 0; i--) nsa[--cnt[c[sa[i]]]] = sa[i];
+        swap(nsa, sa);
     }
 
-    strong_ordering operator<=>(frac other) const {
-        auto [a,b] = equalize(*this, other);
-        if(a.nom > b.nom) return strong_ordering::greater;
-        if(a.nom < b.nom) return strong_ordering::less;
-        return strong_ordering::equal;
+    void kasai(T s) {
+        int k = 0;
+        for(int i = 0; i < n; i++) {
+            if(pos[i] == n-1) continue;
+            int j = sa[pos[i]+1];
+            while(i+k < n && j+k < n && s[i+k] == s[j+k]) k++;
+            lcp[pos[i]] = k;
+            k = max(0, k-1);
+        }
     }
 };
 
 int main() {
     fastio;
 
-    ll n;
+    int n;
     cin >> n;
 
     vector<int> v(n);
     for(int& vi : v) cin >> vi;
 
-    suffix_array_t sa(v.begin(), v.end());
-    vector<ll> haha(n+1);
+    SuffixArray sa(v);
+
+    vector<int> lleq(n, 0), rl(n, n);
+    priority_queue<pii> prioq;
 
     for(int i = 1; i < n; i++) {
-        int l = i+1, r = n, r_count = 0;
-
-        while(l <= r) {
-            int mid = (l+r)/2;
-
-            if(sa.get_lcp(sa.sa[i], sa.sa[mid]) == sa.lcp[i] && sa.get_lcp(sa.sa[i+1], sa.sa[mid]) != sa.lcp[i]) {
-                r_count = mid-i;
-                l = mid+1;
-            }else {
-                r = mid-1;
-            }
+        while(!prioq.empty() && prioq.top().first > sa.lcp[i]) {
+            rl[prioq.top().second] = i;
+            prioq.pop();
         }
-
-        l = 1, r = i;
-        ll l_count = 0;
-
-        while(l <= r) {
-            int mid = (l+r)/2;
-
-            if(sa.get_lcp(sa.sa[mid], sa.sa[i+1]) == sa.lcp[i]) {
-                l_count = i-mid+1;
-                r = mid-1;
-            }else {
-                l = mid+1;
-            }
-        }
-
-        haha[sa.lcp[i]] += 2 * (l_count * r_count);
-
+        prioq.emplace(sa.lcp[i], i);
     }
 
-    for(int i = 1; i <= n; i++) haha[i]++;
+    while(!prioq.empty()) prioq.pop();
 
-    frac<ll> ans = 0;
-
-    for(int i = 0; i <= n; i++) {
-        ans += frac<ll>{haha[i],n*n}*i;
-        ans.reduce();
+    for(int i = n-1; i > 0; i--) {
+        while(!prioq.empty() && prioq.top().first >= sa.lcp[i]) {
+            lleq[prioq.top().second] = i;
+            prioq.pop();
+        }
+        prioq.emplace(sa.lcp[i], i);
     }
 
-    cout << ans.nom << '/' << ans.den << '\n';
+    ll p = 0, q = ll(n)*n;
+
+    for(int i = 1; i < n; i++) p += 2*(ll(rl[i]-i)*(i-lleq[i]))*sa.lcp[i];
+    for(int i = 1; i <= n; i++) p += i;
+
+    ll div = gcd(p,q);
+    p /= div;
+    q /= div;
+
+    cout << p << '/' << q << '\n';
 }
