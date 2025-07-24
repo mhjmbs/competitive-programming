@@ -19,53 +19,47 @@ using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_o
 
 mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
 
+template <typename T>
 struct SuffixArray {
-    int n, classes = 256;
-    vector<int> sa, c, count;
+    int n;
+    vector<int> sa;
 
-    SuffixArray(string s) : n(s.size()+1), sa(n), c(n), count(max(n,classes)) {
-        s += '$';
-        
-        for(char c : s) {
-            count[(c != '$') ? c-'a'+1 : 0]++;
-        }
+    SuffixArray(T s) : n(s.size()+1), sa(n){
+        s.push_back(numeric_limits<typename T::value_type>::min());
+        vector<int> c(n);
 
-        for(int i = 0; i < n; i++) {
-            c[i] = (s[i] != '$') ? s[i]-'a'+1 : 0;
-        }
-        
-        for(int i = 1; i < classes; i++) {
-            count[i] += count[i-1];
-        }
-
-        for(int i = n-1; i >= 0; i--) {
-            sa[count[c[i]]-1] = i;
-            count[c[i]]--;
-        }
+        iota(sa.begin(), sa.end(), 0);
+        copy(s.begin(), s.end(), c.begin());
+        normalize(s,c);
+        counting_sort(c);
 
         for(int k = 0; (1<<k) < n; k++) {
-            vector<int> nsa(n), nc(n);
-            
-            for(int i = 0; i < n; i++) nsa[i] = ((sa[i]-(1<<k))%n+n)%n;
+            for(int i = 0; i < n; i++) sa[i] = (sa[i]-(1<<k) + n) % n;
+            counting_sort(c);
 
-            fill(count.begin(), count.begin()+classes, 0);
-            for(int i = 0; i < n; i++) count[c[i]]++;
-            for(int i = 1; i < classes; i++) count[i] += count[i-1];
-            for(int i = n-1; i >= 0; i--) {
-                sa[count[c[nsa[i]]]-1] = nsa[i]; 
-                count[c[nsa[i]]]--;
-            }
-
-            classes = 1;
+            vector<int> nc(n);
             for(int i = 1; i < n; i++) {
-                nc[sa[i]] = nc[sa[i-1]];
-                if(c[sa[i]] != c[sa[i-1]]) nc[sa[i]]++;
-                else if(c[(sa[i]+(1<<k))%n] != c[(sa[i-1]+(1<<k))%n]) nc[sa[i]]++;
-                classes += nc[sa[i]] != nc[sa[i-1]];
+                nc[sa[i]] = nc[sa[i-1]] + (c[sa[i-1]] != c[sa[i]] || c[(sa[i-1] + (1<<k)) % n] != c[(sa[i] + (1<<k)) % n]);
             }
-
-            swap(c,nc);
+            
+            swap(c, nc);
         }
+    }
+
+    void normalize(string& s, vector<int>& c) {
+        vector<pair<typename T::value_type, int>> bla(n);
+        for(int i = 0; i < n; i++) bla[i] = {s[i], i};
+        sort(bla.begin(), bla.end());
+        c[bla[0].second] = 0;
+        for(int i = 1; i < n; i++) c[bla[i].second] = c[bla[i-1].second] + (bla[i-1].first != bla[i].first);
+    }
+
+    void counting_sort(vector<int>& c) {
+        vector<int> nsa(n), cnt(n);
+        for(int ci : c) cnt[ci]++;
+        for(int i = 1; i < n; i++) cnt[i] += cnt[i-1];
+        for(int i = n-1; i >= 0; i--) nsa[--cnt[c[sa[i]]]] = sa[i];
+        swap(nsa, sa);
     }
 };
 
@@ -77,6 +71,8 @@ int main() {
 
     SuffixArray sa(s);
 
-    for(int i : sa.sa) cout << i << ' ';
+    for(int i : sa.sa) {
+        cout << i << ' ';
+    }
     cout << '\n';
 }
