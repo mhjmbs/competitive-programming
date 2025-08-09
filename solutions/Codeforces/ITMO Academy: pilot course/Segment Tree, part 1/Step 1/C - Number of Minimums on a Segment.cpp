@@ -8,6 +8,7 @@ using namespace __gnu_pbds;
 #define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
 
 using ll = long long;
+using ull = unsigned long long;
 using pii = pair<int,int>;
 using pll = pair<ll,ll>;
 using tiii = tuple<int,int,int>;
@@ -16,54 +17,56 @@ using tlll = tuple<ll,ll,ll>;
 using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
 using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
 
-template <typename T>
+mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+
+template<typename T, auto Op, T e>
 struct SegmentTree {
-    inline static const T neutral = {numeric_limits<int>::max(), 0};
     vector<T> seg;
-    int leafsBegin;
-    int leafsCount;
+    int l0, ln;
 
-    SegmentTree(const vector<int>& v) {
-        leafsCount = 1;
-        while(leafsCount < v.size()) leafsCount *= 2;
-        seg.resize(2*leafsCount-1, neutral);
-        
-        leafsBegin = seg.size() - leafsCount;
+    SegmentTree(int n) : ln(1) {
+        while(ln < n) ln *= 2;
+        seg.resize(2*ln-1, e);
+        l0 = seg.size() - ln;
+    }
 
-        for(int i = 0; i < v.size(); i++) {
-            seg[leafsBegin+i] = {v[i],1};
-        }
-
-        for(int i = leafsBegin-1; i >= 0; i--) {
-            seg[i] = merge(seg[2*i+1], seg[2*i+2]);
+    SegmentTree(vector<T>& a) : SegmentTree(a.size()) {
+        copy(a.begin(), a.end(), seg.begin()+l0);
+        for(int i = l0-1; i >= 0; i--) {
+            seg[i] = Op(seg[2*i+1], seg[2*i+2]);
         }
     }
 
-    void upd(int i, int val) {
-        i = leafsBegin + i;
-        seg[i] = {val,1};
+    void upd(int i, T x) {
+        i = l0+i;
+        seg[i] = x;
         while(i > 0) {
             i = (i-1)/2;
-            seg[i] = merge(seg[2*i+1], seg[2*i+2]);
+            seg[i] = Op(seg[2*i+1], seg[2*i+2]);
         }
     }
 
     T query(int l, int r) {
-        return query(l, r, 0, leafsCount-1, 0);
+        return query(l, r, 0, ln, 0);
     }
 
     T query(int l, int r, int lx, int rx, int i) {
-        if(rx < l || r < lx) return neutral;
+        if(r <= lx || rx <= l) return e;
         if(l <= lx && rx <= r) return seg[i];
-        int mid = (lx+rx)/2;
-        return merge( query(l, r, lx, mid, 2*i+1), query(l, r, mid+1, rx, 2*i+2) );
-    }
-
-    T merge(T a, T b) {
-        if(a.first == b.first) return {a.first, a.second+b.second};
-        return min(a,b);
+        int m = (lx+rx)/2;
+        return Op( query(l, r, lx, m, 2*i+1), query(l, r, m, rx, 2*i+2) );
     }
 };
+
+struct Node {
+    int min;
+    int cnt;
+};
+
+Node Op(Node a, Node b) {
+    if(a.min != b.min) return (a.min < b.min) ? a : b;
+    return {a.min, a.cnt + b.cnt};
+}
 
 int main() {
     fastio;
@@ -71,24 +74,27 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<int> a(n);
-    for(int& ai : a) cin >> ai;
+    vector<Node> a(n);
+    for(auto& [min,cnt] : a) {
+        cin >> min;
+        cnt = 1;
+    }
 
-    SegmentTree<pii> seg(a);
+    SegmentTree<Node, Op, Node{INT_MAX, 0}> seg(a);
 
-    for(int i = 0; i < m; i++) {
-        int t;
-        cin >> t;
+    while(m--) {
+        int mi;
+        cin >> mi;
 
-        if(t == 1) {
+        if(mi == 1) {
             int i, v;
             cin >> i >> v;
-            seg.upd(i,v);
+            seg.upd(i, {v,1});
         }else {
             int l, r;
             cin >> l >> r;
-            pii ans = seg.query(l,r-1);
-            cout << ans.first << ' ' << ans.second << '\n';
+            Node ans = seg.query(l,r);
+            cout << ans.min << ' ' << ans.cnt << '\n';
         }
     }
 }
