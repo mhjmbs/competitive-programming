@@ -1,0 +1,72 @@
+#include <bits/stdc++.h>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
+
+#define fastio ios::sync_with_stdio(0), cin.tie(nullptr)
+
+using ll = long long;
+using ull = unsigned long long;
+using pii = pair<int,int>;
+using pll = pair<ll,ll>;
+using tiii = tuple<int,int,int>;
+using tlll = tuple<ll,ll,ll>;
+
+using ordered_set = tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+using ordered_multiset = tree<ll, null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update>;
+
+mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+
+int n, m;
+vector<int> masks, yes;
+// yes[mask] := cara que tem yes ao menos em mask. Guardar ordenado por (mais caras ligados, menor i)
+
+void generate(int i, int subset, int im) {
+    if(i == m) {
+        if(!yes[subset] || __popcount(masks[yes[subset]]) < __popcount(masks[im])) {
+            yes[subset] = im;
+        }
+        return;
+    }
+    generate(i+1, subset, im);
+    if(subset&(1<<i) && yes[subset] == im) generate(i+1, subset^(1<<i), im);
+}
+
+int nt(int mask) {
+    return mask ^ ((1<<m)-1);
+}
+
+int main() {
+    fastio;
+
+    cin >> n >> m;
+    
+    masks.resize(n+1);
+    for(int i = 1; i <= n; i++) {
+        string mask;
+        cin >> mask;
+        for(char& c : mask) c = (c == 'Y' ? '1' : '0');
+        masks[i] = stoi(mask, nullptr, 2);
+    }
+    
+    yes.resize(1<<m);
+
+    int cnt = -1;
+    int i0 = -1, i1 = -1;
+    
+    for(int i = 1; i <= n; i++) {
+        int ncnt = __popcount(masks[yes[nt(masks[i])]] & masks[i]);
+        int ni0 = yes[nt(masks[i])];
+        if(yes[nt(masks[i])] && ( cnt == ncnt && ni0 < i0 || cnt < ncnt)) {
+            cnt = __popcount(masks[yes[nt(masks[i])]] & masks[i]);
+            i0 = yes[nt(masks[i])];
+            i1 = i;
+        }
+        generate(0, masks[i], i);
+    }
+
+    if(cnt == -1) cout << "No\n";
+    else cout << i0 << ' ' << i1 << '\n';
+}
