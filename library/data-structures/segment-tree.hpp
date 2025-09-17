@@ -13,7 +13,7 @@ struct SegmentTree {
         l0 = seg.size() - ln;
     }
  
-    SegmentTree(vector<T>& a) : SegmentTree(a.size()) {
+    SegmentTree(const vector<T>& a) : SegmentTree(a.size()) {
         copy(a.begin(), a.end(), seg.begin()+l0);
         for(int i = l0-1; i >= 0; i--) {
             seg[i] = Op(seg[2*i+1], seg[2*i+2]);
