@@ -19,7 +19,7 @@ struct FenwickTree {
         }
     }
 
-    void sum(int i, T val) {
+    void add(int i, T val) {
         while(i <= n) {
             tree[i] += val;
             i += i&-i;
